@@ -1,12 +1,6 @@
 /*
-KNN ALGORITHM USING ONE INDEPENDENT VARIABLE (dropPosition)
+KNN ALGORITHM USING MULTIPLE VARIABLES
 INPUT DATA FORMAT: [dropPosition, bounciness, size, bucketLabel]
-Finding an ideal K:
-- Record a bunch of data points
-- Split them into a 'test set' and 'training set'
-- For each 'test' record, run knn using 'training' data
-- Record each time that the result of KNN matches the record bucket as success
-- Divide success and the test set length. Result is accuracy.
 */
 
 const outputs = []
