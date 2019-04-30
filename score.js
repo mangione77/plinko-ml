@@ -11,10 +11,11 @@ function onScoreUpdate(dropPosition, bounciness, size, bucketLabel) {
 
 function runAnalysis() {
   const testSetSize = 100
-  const [testData, trainingData] = splitDataset(outputs, testSetSize)
+  const [testData, trainingData] = splitDataset(minMax(outputs, 3), testSetSize)
+  
   _.range(1, 20).forEach(k => {
     const accuracy = _.chain(testData)
-                      .filter(testPoint => knn(trainingData, testPoint[0], k) === testPoint[3])
+                      .filter(testPoint => knn(trainingData, _.initial(testPoint), k) === testPoint[3])
                       .size()
                       .divide(testSetSize)
                       .value()
@@ -30,19 +31,41 @@ function splitDataset(data, testCount) {
 }
 
 const distance = (pointA, pointB) => {
-  return Math.abs(pointA - pointB)
+  return _.chain(pointA)
+          .zip(pointB)
+          .map(([a, b]) => (a - b) ** 2)
+          .sum()
+          .value() ** 0.5
 }
 
 function knn(data, point, k) {
   return _.chain(data)
-  .map(output => [distance(output[0], point), output[3]]) 
-  .sortBy(output => output[0]) 
-  .take(k) 
-  .countBy(output => output[1]) 
-  .toPairs() 
-  .sortBy(output => output[1])
-  .last()
-  .first()
-  .parseInt()
-  .value() 
+          .map(row => {
+            return [
+              distance(_.initial(row), point), 
+              _.last(row)
+            ]
+          }) 
+          .sortBy(row => row[0]) 
+          .take(k) 
+          .countBy(row => row[1]) 
+          .toPairs() 
+          .sortBy(row => row[1])
+          .last()
+          .first()
+          .parseInt()
+          .value() 
+}
+
+function minMax(data, featureCount) {
+  const clone = _.cloneDeep(data)
+  for (let i = 0; i < featureCount; i++) {
+    const column = clone.map(row => row[1])
+    const min = _.min(column)
+    const max = _.max(column)
+    for (let j = 0; j < clone.length; j++) {
+      clone[j][i] = (clone[j][i] - min) / (max - min)
+    }
+  }
+  return clone
 }
